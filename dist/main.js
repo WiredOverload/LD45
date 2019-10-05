@@ -48127,84 +48127,6 @@ function LensFlare() {
 
 /***/ }),
 
-/***/ "./src/enemy.js":
-/*!**********************!*\
-  !*** ./src/enemy.js ***!
-  \**********************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-exports.__esModule = true;
-var three_1 = __webpack_require__(/*! three */ "./node_modules/three/build/three.module.js");
-var stage_1 = __webpack_require__(/*! ./stage */ "./src/stage.js");
-var THREE = __webpack_require__(/*! three */ "./node_modules/three/build/three.module.js");
-var Enemy = /** @class */ (function (_super) {
-    __extends(Enemy, _super);
-    function Enemy(scene, type, maxAnisotrophy, x, y, xVel, yVel) {
-        var _this = _super.call(this) || this;
-        _this.scene = scene;
-        _this.x = x;
-        _this.y = y;
-        _this.xVel = xVel;
-        _this.yVel = yVel;
-        _this.health = 100;
-        _this.isAlive = true;
-        _this.maxAnisotrophy = maxAnisotrophy;
-        var spriteMap;
-        switch (type) {
-            case 0: { //wasp
-                _this.health = 50;
-                spriteMap = new THREE.TextureLoader().load("assets/wasp1.png");
-                break;
-            }
-            case 1: { //exterminator
-                _this.health = 100;
-                spriteMap = new THREE.TextureLoader().load("assets/exterminator.png");
-                break;
-            }
-            case 2: { //NPCs?
-            }
-        }
-        spriteMap.anisotropy = maxAnisotrophy;
-        var spriteMaterial = new THREE.SpriteMaterial({ map: spriteMap, color: 0xffffff });
-        spriteMaterial.map.minFilter = THREE.LinearFilter;
-        _this.sprite = new three_1.Sprite(spriteMaterial);
-        _this.sprite.scale.set(45 / 81, 1, 1);
-        _this.scene.add(_this.sprite);
-        return _this;
-    }
-    Enemy.prototype.update = function () {
-        this.x += this.xVel;
-        this.y += this.yVel;
-        this.sprite.position.set(this.x, this.y, 0);
-        if (this.health <= 0) {
-            this.isAlive = false;
-        }
-    };
-    Enemy.prototype.render = function () {
-    };
-    return Enemy;
-}(stage_1.Updateable));
-exports.Enemy = Enemy;
-
-
-/***/ }),
-
 /***/ "./src/index.js":
 /*!**********************!*\
   !*** ./src/index.js ***!
@@ -48219,52 +48141,13 @@ exports.Enemy = Enemy;
  * Buttons and other interactable elements need more work in stage
  * individual stage update methods defined here?
  *
- * Game Plan:
- * Rogue Legacy, Now With Bees (TM)
- * A bunch of bees dressed up as a man
- * platformer inside a mansion
- * hiding himself as a man to fit in with society, which uses bees as currency
- * loses bee mass as he gets hit due to losing bees
- * loses bee mass as he uses Bee Abilities (TM)
- * leaves the queen when the swarm disperses
- *  pickup previosuly dropped queens used for upgrades at shop
- *
- *
- * TODO For Game
- * Splash stage
- * lose stage
- * shop stage
- * player movement + properties
- * projectiles
- * enemies
- *  melee + ranged
- *  NPCs
- * NPC Text?
- * platforms and environment
- * art
- *  platforms
- *  backgrounds
- *  other stage screens
- * sound
- *  music
- *  bee sounds? we need it but it could sound traumatizing
- * different player attacks
- *  keep it simple by just spawning bee projectiles at first
- *  upgrades could make bees homing, bounce, be reobtainable...
- * Score, time or number of times died
- * NPCs that attack you if it's too obvious you are bees
- *
- * Feel free to add anything you want here and delete anything that's been completed
  */
 exports.__esModule = true;
 var three_1 = __webpack_require__(/*! three */ "./node_modules/three/build/three.module.js");
 var stage_1 = __webpack_require__(/*! ./stage */ "./src/stage.js");
 var staticImage_1 = __webpack_require__(/*! ./staticImage */ "./src/staticImage.js");
 var player_1 = __webpack_require__(/*! ./player */ "./src/player.js");
-var projectile_1 = __webpack_require__(/*! ./projectile */ "./src/projectile.js");
-var enemy_1 = __webpack_require__(/*! ./enemy */ "./src/enemy.js");
 var platform_1 = __webpack_require__(/*! ./platform */ "./src/platform.js");
-var THREE = __webpack_require__(/*! three */ "./node_modules/three/build/three.module.js");
 var renderer = new three_1.WebGLRenderer();
 //renderer.setSize(window.innerWidth, window.innerHeight);//1:1 scale resolution
 if (window.innerWidth / 16 > window.innerHeight / 9) {
@@ -48279,172 +48162,59 @@ document.body.getElementsByClassName('centered-canvas')[0].appendChild(renderer.
 var stageList = {}; //dictionary of all stages
 var currentStage = "splash";
 var win = false;
-var music = new Audio('assets/SFX/Beeswax.mp3');
+var music = new Audio('assets/SFX/OceanSong.wav');
 music.loop = true;
-var shootClip = new Audio('assets/SFX/bee_buzz_edit.wav');
-var hitClip = new Audio('assets/SFX/wasp_sting.wav');
-var hitTargetClip = new Audio('assets/SFX/bee_man_get_hit2.wav');
-hitClip.volume = 0.8;
+//var shootClip = new Audio('assets/SFX/bee_buzz_edit.wav');
+//shootClip.volume = 0.8;
 var ticks = 0;
 stageList["main"] = new stage_1.Stage();
 stageList["splash"] = new stage_1.Stage();
 stageList["gameOver"] = new stage_1.Stage();
 stageList["gameOver"].update = function () {
-    stageList["gameOver"].gameElements.forEach(function (el) { el.update(); });
+    stageList["gameOver"].elementsList["game"].forEach(function (el) { el.update(); });
 };
 //splash screen logic
 stageList["splash"].update = function () {
-    stageList["splash"].gameElements.forEach(function (el) { el.update(); });
+    stageList["splash"].elementsList["game"].forEach(function (el) { el.update(); });
 };
 //backgrounds
-stageList["main"].UIElements.push(new staticImage_1.StaticImage(stageList["main"].UIScene, 0, 0, "assets/space4096.png", new three_1.Vector3(16, 9, 1)));
-stageList["main"].BackgroundElements.push(new staticImage_1.StaticImage(stageList["main"].BackgroundScene, 0, 4, "assets/backgroundFullDoubled.png", new three_1.Vector3(16, 9, 1)));
-stageList["main"].BackgroundElements.push(new staticImage_1.StaticImage(stageList["main"].BackgroundScene, 16, 4, "assets/backgroundFullDoubled.png", new three_1.Vector3(16, 9, 1)));
-stageList["gameOver"].UIElements.push(new staticImage_1.StaticImage(stageList["gameOver"].UIScene, 0, 0, "assets/winScreen.png", new three_1.Vector3(16, 9, 1)));
-stageList["splash"].UIElements.push(new staticImage_1.StaticImage(stageList["splash"].UIScene, 0, 0, "assets/splashscreen.png", new three_1.Vector3(16, 9, 1)));
-//add platforms before player
-for (var i = 0; i < 16; i++) {
-    stageList["main"].gameElements.push(new platform_1.Platform(stageList["main"].gameScene, (i * 16) + 2, 1));
-    stageList["main"].gameElements.push(new platform_1.Platform(stageList["main"].gameScene, (i * 16) + 2, 6));
-    stageList["main"].gameElements.push(new platform_1.Platform(stageList["main"].gameScene, (i * 16) + 6, 2));
-    stageList["main"].gameElements.push(new platform_1.Platform(stageList["main"].gameScene, (i * 16) + 6, 4));
-    stageList["main"].gameElements.push(new platform_1.Platform(stageList["main"].gameScene, (i * 16) + 10, 2));
-    stageList["main"].gameElements.push(new platform_1.Platform(stageList["main"].gameScene, (i * 16) + 10, 4));
-    stageList["main"].gameElements.push(new platform_1.Platform(stageList["main"].gameScene, (i * 16) + 14, 1));
-    stageList["main"].gameElements.push(new platform_1.Platform(stageList["main"].gameScene, (i * 16) + 14, 6));
-}
-stageList["main"].gameElements.push(new player_1.Player(stageList["main"].gameScene, renderer.capabilities.getMaxAnisotropy()));
-//enemies
-//stageList["main"].gameElements.push(new Enemy(stageList["main"].gameScene, 0, renderer.capabilities.getMaxAnisotropy(), 1, 0, 0, 0));
-//game over sprite
-var gameOver = new THREE.TextureLoader().load("assets/gameOver.png");
-var spriteMap = gameOver;
-spriteMap.anisotropy = renderer.capabilities.getMaxAnisotropy();
-var spriteMaterial = new THREE.SpriteMaterial({ map: spriteMap, color: 0xffffff });
-spriteMaterial.map.minFilter = THREE.LinearFilter;
-var gameOverSprite = new three_1.Sprite(spriteMaterial);
-gameOverSprite.scale.set(12, 9, 1);
-// arrow sprite
-var arrow = new THREE.TextureLoader().load("assets/arrow.png");
-var arrowSpriteMap = arrow;
-arrowSpriteMap.anisotropy = renderer.capabilities.getMaxAnisotropy();
-var arrowSpriteMaterial = new THREE.SpriteMaterial({ map: arrowSpriteMap, color: 0xffffff });
-arrowSpriteMaterial.map.minFilter = THREE.LinearFilter;
-var arrowSprite = new three_1.Sprite(arrowSpriteMaterial);
-arrowSprite.position.set(0, 3, 0);
-stageList["main"].gameScene.add(arrowSprite);
+stageList["main"].elementsList["ui"].push(new staticImage_1.StaticImage(stageList["main"].sceneList["ui"], 0, 0, "assets/solidBlue.png", new three_1.Vector3(16, 9, 1)));
+stageList["main"].elementsList["background"].push(new staticImage_1.StaticImage(stageList["main"].sceneList["background"], 0, 4.5, "assets/waves1.png", new three_1.Vector3(16, 9, 1)));
+stageList["main"].elementsList["background"].push(new staticImage_1.StaticImage(stageList["main"].sceneList["background"], 0, 4.5, "assets/waves2.png", new three_1.Vector3(16, 9, 1)));
+//stageList["gameOver"].elementsList["ui"].push(new StaticImage(stageList["gameOver"].sceneList["ui"], 0, 0, "assets/winScreen.png", new Vector3(16, 9, 1)));
+//stageList["splash"].elementsList["ui"].push(new StaticImage(stageList["splash"].sceneList["ui"], 0, 0, "assets/splashscreen.png", new Vector3(16, 9, 1)));
+stageList["main"].elementsList["game"].push(new player_1.Player(stageList["main"].sceneList["game"], renderer.capabilities.getMaxAnisotropy()));
 //game screen logic
 stageList["main"].update = function () {
     var localStage = stageList["main"];
-    localStage.gameElements.forEach(function (el) {
+    localStage.elementsList["game"].forEach(function (el) {
         if (el.isAlive != undefined && !el.isAlive) {
-            localStage.gameScene.remove(el.sprite);
+            localStage.sceneList["game"].remove(el.sprite);
         }
     });
-    var localPlayer = localStage.gameElements.find(function (el) { return el instanceof player_1.Player; });
-    if (!localPlayer.isAlive) {
-        gameOverSprite.position.x = localPlayer.x;
-        gameOverSprite.position.y = 4;
-        localStage.gameScene.add(gameOverSprite);
-    }
-    // filter out dead enemies
-    localStage.gameElements = localStage.gameElements.filter(function (el) { return el.isAlive || el instanceof player_1.Player || el.isAlive == undefined; });
-    localStage.gameElements.forEach(function (element) {
+    var localPlayer = localStage.elementsList["game"].find(function (el) { return el instanceof player_1.Player; });
+    // filter out dead entities
+    localStage.elementsList["game"] = localStage.elementsList["game"].filter(function (el) { return el.isAlive || el instanceof player_1.Player || el.isAlive == undefined; });
+    localStage.elementsList["game"].forEach(function (element) {
         if (element.isAlive != undefined && element.x < localPlayer.x - 16) {
             element.isAlive = false;
         }
     });
-    localStage.gameElements.forEach(function (el) { el.update(); });
-    localStage.gameCamera.position.set(localPlayer ? localPlayer.x : localStage.gameCamera.position.x, localStage.gameCamera.position.y, localStage.gameCamera.position.z);
-    //background logic
-    var isBackgroundLeft = false, isBackgroundRight = false;
-    localStage.BackgroundElements.forEach(function (element) {
-        if (element.x < localPlayer.x && element.x > localPlayer.x - 16) {
-            isBackgroundLeft = true;
-        }
-        else if (element.x > localPlayer.x && element.x < localPlayer.x + 16) {
-            isBackgroundRight = true;
-        }
-        else {
-            localStage.BackgroundElements.splice(localStage.BackgroundElements.indexOf(element), 1);
-        }
-    });
-    if (!isBackgroundLeft) {
-        stageList["main"].BackgroundElements.push(new staticImage_1.StaticImage(stageList["main"].BackgroundScene, (Math.round(localPlayer.x / 16) * 16) - 16, 4, "assets/backgroundFullDoubled.png", new three_1.Vector3(16, 9, 1)));
-    }
-    if (!isBackgroundRight) {
-        stageList["main"].BackgroundElements.push(new staticImage_1.StaticImage(stageList["main"].BackgroundScene, (Math.round(localPlayer.x / 16) * 16) + 16, 4, "assets/backgroundFullDoubled.png", new three_1.Vector3(16, 9, 1)));
-    }
+    localStage.elementsList["game"].forEach(function (el) { el.update(); });
+    //localStage.cameraList["game"].position.set(localPlayer ? localPlayer.x : localStage.cameraList["game"].position.x, localStage.cameraList["game"].position.y, localStage.cameraList["game"].position.z);
     //collision logic
-    localPlayer.isOnGround = false;
-    stageList["main"].gameElements.forEach(function (el) {
-        stageList["main"].gameElements.forEach(function (el2) {
+    stageList["main"].elementsList["game"].forEach(function (el) {
+        stageList["main"].elementsList["game"].forEach(function (el2) {
             if (el !== el2) { // only check for collision between two different objects
                 if (collision(el, el2)) {
                     // if player collides with an enemy projectile, take damage   
-                    if (el instanceof player_1.Player && el.isAlive && el2 instanceof projectile_1.Projectile && (el2.type === 2 || el2.type === 3)) {
-                        el.takeHit();
+                    if (el instanceof player_1.Player && el.isAlive && el2 instanceof platform_1.Platform && (el2.type === 2 || el2.type === 3)) {
                         el2.isAlive = false;
-                    }
-                    // if enemy collides with player projectile, enemy takes damage
-                    if (el instanceof enemy_1.Enemy && el2 instanceof projectile_1.Projectile && (el2.type === 0 || el2.type === 1)) {
-                        if (el.health > 0) {
-                            el.health -= 25;
-                            el2.isAlive = false;
-                            hitTargetClip.play();
-                        }
-                    }
-                    // if player collides with enemy, give player period of invuln and push back
-                    if (el instanceof player_1.Player && el.isAlive && el2 instanceof enemy_1.Enemy) {
-                        var beeAmount = el.health <= 10 && el.health > 0 ? 8 : 4;
-                        el.takeHit();
-                        for (var i = 0; i < Math.PI * 2; i += Math.PI / beeAmount) {
-                            stageList["main"].gameElements.push(new projectile_1.Projectile(stageList["main"].gameScene, localPlayer.x, localPlayer.y, localPlayer.xVel + (Math.cos(i) * .05), localPlayer.yVel + (Math.sin(i) * .05), 0));
-                        }
-                        hitClip.play();
-                    }
-                    // if player collides with queen, increment player's queen count
-                    if (el instanceof player_1.Player && el.isAlive && el2 instanceof projectile_1.Projectile && el2.type === 4) {
-                        el.queenCount++;
-                        el.health += 50;
-                        el2.isAlive = false;
-                        console.log('picked up queen');
-                    }
-                    //player colliding with platform
-                    if (el instanceof player_1.Player && el2 instanceof platform_1.Platform) {
-                        if (el.x - (el.sprite.scale.x / 2) < el2.x + (el2.sprite.scale.x / 2) &&
-                            el.x + (el.sprite.scale.x / 2) > el2.x - (el2.sprite.scale.x / 2) &&
-                            el.y - (el.sprite.scale.y / 2) < el2.y + (el2.sprite.scale.y / 2) &&
-                            el.y - (el.sprite.scale.y / 2) + .1 > el2.y - (el2.sprite.scale.y / 2)) {
-                            el.isOnGround = true;
-                            el.yVel = Math.max(0, el.yVel);
-                            //console.log('player collided with platform');
-                        }
                     }
                 }
             }
         });
     });
-    // game win logic
-    if (localPlayer.x >= 240) {
-        win = true;
-        currentStage = "gameOver";
-    }
-    //enemy spawning
-    if (ticks % 60 == 0) {
-        stageList["main"].gameElements.push(new enemy_1.Enemy(stageList["main"].gameScene, 0, renderer.capabilities.getMaxAnisotropy(), localPlayer.x + 18, localPlayer.y, -0.1, 0));
-    }
-    if (ticks % 240 == 0) {
-        var enemy = new enemy_1.Enemy(stageList["main"].gameScene, 0, renderer.capabilities.getMaxAnisotropy(), localPlayer.x - 15.5, localPlayer.y, 0.1, 0);
-        var spriteMap = new THREE.TextureLoader().load("assets/wasp1.png");
-        spriteMap.repeat.set(-1, 1);
-        spriteMap.offset.set(1, 0);
-        spriteMap.anisotropy = renderer.getMaxAnisotropy();
-        var spriteMaterial = new THREE.SpriteMaterial({ map: spriteMap, color: 0xffffff });
-        spriteMaterial.map.minFilter = THREE.LinearFilter;
-        enemy.sprite.material = spriteMaterial;
-        stageList["main"].gameElements.push(enemy);
-    }
 };
 //main update
 var interval = setInterval(update, 1000 / 60); //60 ticks per second
@@ -48481,7 +48251,7 @@ window.addEventListener("keydown", function (e) {
         music.play();
     }
     if (currentStage == "main") {
-        var player = stageList["main"].gameElements.find(function (el) { return el instanceof player_1.Player; });
+        var player = stageList["main"].elementsList["game"].find(function (el) { return el instanceof player_1.Player; });
         if (player.isAlive) {
             if (e.keyCode === 39 /* right */ || e.keyCode === 68 /* d */) {
                 player.right = true;
@@ -48492,16 +48262,8 @@ window.addEventListener("keydown", function (e) {
             if (e.keyCode === 38 /* up */ || e.keyCode === 87 /* w */) {
                 player.up = true;
             }
-            if (e.keyCode === 32 /* space bar */) {
-                // shoot projectiles
-                if (!player.isShooting) {
-                    player.health -= 4;
-                    stageList["main"].gameElements.push(new projectile_1.Projectile(stageList["main"].gameScene, player.x, player.y, player.xVel >= 0 ? 0.05 + player.xVel : -0.05 + player.xVel, 0, 0));
-                    stageList["main"].gameElements.push(new projectile_1.Projectile(stageList["main"].gameScene, player.x, player.y, player.xVel >= 0 ? 0.05 + player.xVel : -0.05 + player.xVel, 0.0075, 0));
-                    stageList["main"].gameElements.push(new projectile_1.Projectile(stageList["main"].gameScene, player.x, player.y, player.xVel >= 0 ? 0.05 + player.xVel : -0.05 + player.xVel, -0.0075, 0));
-                    shootClip.play();
-                }
-                player.isShooting = true;
+            if (e.keyCode === 40 /* down */ || e.keyCode === 83 /* s */) { //check this lol
+                player.down = true;
             }
         }
     }
@@ -48509,7 +48271,7 @@ window.addEventListener("keydown", function (e) {
 /* movement controls for the player */
 window.addEventListener("keyup", function (e) {
     if (currentStage == "main") {
-        var player = stageList["main"].gameElements.find(function (el) { return el instanceof player_1.Player; });
+        var player = stageList["main"].elementsList["game"].find(function (el) { return el instanceof player_1.Player; });
         if (player.isAlive) {
             if (e.keyCode === 39 /* right */ || e.keyCode === 68 /* d */) {
                 player.right = false;
@@ -48517,32 +48279,22 @@ window.addEventListener("keyup", function (e) {
             if (e.keyCode === 37 /* left */ || e.keyCode === 65 /* a */) {
                 player.left = false;
             }
-            if (e.keyCode === 32 /* space bar */) {
-                player.isShooting = false;
-            }
             if (e.keyCode === 38 /* up */ || e.keyCode === 87 /* w */) {
                 player.up = false;
+            }
+            if (e.keyCode === 40 /* down */ || e.keyCode === 83 /* s */) { //check this lol
+                player.down = false;
             }
         }
     }
 });
 var respawn = function () {
     // respawn player to starting position
-    var player = stageList["main"].gameElements.find(function (el) { return el instanceof player_1.Player; });
+    var player = stageList["main"].elementsList["game"].find(function (el) { return el instanceof player_1.Player; });
     if (player) {
-        player.x = -4;
+        player.x = 0;
         player.y = 0;
-        player.xVel = 0;
-        player.yVel = 0;
-        player.up = false;
-        player.left = false;
-        player.right = false;
-        player.isJumping = false;
         player.isAlive = true;
-        player.isInvuln = false;
-        player.isShooting = false;
-        player.isLookingRight = true;
-        player.health = 100;
     }
 };
 window.addEventListener("click", function (e) {
@@ -48550,21 +48302,6 @@ window.addEventListener("click", function (e) {
         currentStage = "main";
     }
     else {
-        var player = stageList["main"].gameElements.find(function (el) { return el instanceof player_1.Player; });
-        if (!player.isAlive) {
-            //spawn queen at player's corpse
-            stageList["main"].gameElements.push(new projectile_1.Projectile(stageList["main"].gameScene, player.x, 0, 0, 0, 4));
-            respawn();
-            stageList["main"].gameScene.add(player.sprite);
-            console.log("respawned");
-            // remove game over indicator
-            stageList["main"].gameScene.remove(gameOverSprite);
-        }
-        if (win) {
-            currentStage = "main";
-            win = false;
-            respawn();
-        }
     }
 });
 
@@ -48599,23 +48336,72 @@ var stage_1 = __webpack_require__(/*! ./stage */ "./src/stage.js");
 var THREE = __webpack_require__(/*! three */ "./node_modules/three/build/three.module.js"); //only needed due to three type shenanigans
 var Platform = /** @class */ (function (_super) {
     __extends(Platform, _super);
-    function Platform(scene, x, y) {
+    function Platform(scene, x, y, xVel, yVel, type, rotationRadians) {
         var _this = _super.call(this) || this;
         _this.x = x;
         _this.y = y;
-        var spriteMap = new THREE.TextureLoader().load("assets/woodPlatform1.png");
+        _this.type = type;
+        _this.totalTicks = 0;
+        _this.isAlive = true;
+        _this.xVelocity = xVel;
+        _this.yVelocity = yVel;
+        var scaleX = 1 / 8;
+        var scaleY = 1 / 8;
+        var scaleZ = 1;
+        _this.rotationRadians = rotationRadians;
+        var spriteMap;
+        switch (type) {
+            case 0: { //basic bee
+                spriteMap = new THREE.TextureLoader().load("assets/bee1.png");
+                _this.lifetimeTicks = 60 * 10; //10 seconds
+                break;
+            }
+            case 1: { //homing bee
+                spriteMap = new THREE.TextureLoader().load("assets/bee1.png");
+                _this.lifetimeTicks = 60 * 10; //10 seconds
+                break;
+            }
+            case 2: { //exterminator gas puff
+                spriteMap = new THREE.TextureLoader().load("assets/BoundingBox.png");
+                _this.lifetimeTicks = 60 * 3; //3 seconds
+                break;
+            }
+            case 3: { //wasp? NYI
+                spriteMap = new THREE.TextureLoader().load("assets/BoundingBox.png");
+                break;
+            }
+            case 4: { //queen bee
+                spriteMap = new THREE.TextureLoader().load("assets/queenbee.png");
+                var scaleX = 9 / 10;
+                var scaleY = 1;
+                var scaleZ = 1;
+                break;
+            }
+        }
         spriteMap.minFilter = THREE.NearestFilter;
         spriteMap.magFilter = THREE.NearestFilter;
         var spriteMaterial = new THREE.SpriteMaterial({ map: spriteMap, color: 0xffffff });
         _this.sprite = new three_1.Sprite(spriteMaterial);
-        _this.sprite.scale.set(2, 1 / 8, 1);
-        _this.sprite.position.set(x, y, 0);
+        _this.sprite.scale.set(scaleX, scaleY, scaleZ); //guesstemates
         scene.add(_this.sprite);
         return _this;
     }
     Platform.prototype.render = function () {
     };
     Platform.prototype.update = function () {
+        this.totalTicks++;
+        if (this.totalTicks >= this.lifetimeTicks) {
+            this.isAlive = false;
+        }
+        this.x += this.xVelocity;
+        this.y += this.yVelocity;
+        if (this.type == 2) {
+            this.xVelocity -= this.xVelocity / 10;
+            this.yVelocity -= this.yVelocity / 10;
+        }
+        else if (this.type == 1) {
+            //add homing bee logic here
+        }
         this.sprite.position.set(this.x, this.y, 0);
     };
     return Platform;
@@ -48656,54 +48442,29 @@ var Player = /** @class */ (function (_super) {
     function Player(scene, maxAnisotrophy) {
         var _this = _super.call(this) || this;
         _this.scene = scene;
-        _this.x = -4;
-        _this.y = 0;
+        _this.x = 0;
+        _this.y = 4.5;
         _this.xVel = 0;
         _this.yVel = 0;
-        _this.up = false;
         _this.left = false;
         _this.right = false;
-        _this.isJumping = false;
-        _this.isOnGround = true;
+        _this.up = false;
+        _this.down = false;
         _this.maxVel = 0.05;
         _this.health = 100;
         _this.isAlive = true;
-        _this.isInvuln = false;
-        _this.isShooting = false;
-        _this.isLookingRight = true;
         _this.maxAnisotrophy = maxAnisotrophy;
-        _this.beemanIdleState = new THREE.TextureLoader().load("assets/beeman_idle1.png");
-        _this.beemanIdleStateHurt1 = new THREE.TextureLoader().load("assets/beeman_idle2.png");
-        _this.beemanIdleStateHurt2 = new THREE.TextureLoader().load("assets/beeman_idle3.png");
-        _this.beemanShootingState = new THREE.TextureLoader().load("assets/beeman1.png");
-        _this.beemanShootingStateHurt1 = new THREE.TextureLoader().load("assets/beeman2.png");
-        _this.beemanShootingStateHurt2 = new THREE.TextureLoader().load("assets/beeman3.png");
-        _this.invulnTicks = 0;
-        _this.queenCount = 0;
+        _this.beemanIdleState = new THREE.TextureLoader().load("assets/Tiny.png");
         var spriteMap = _this.beemanIdleState;
-        if (_this.health < 75) {
-            spriteMap = _this.beemanIdleStateHurt1;
-        }
-        else if (_this.health < 50) {
-            spriteMap = _this.beemanIdleStateHurt2;
-        }
         spriteMap.anisotropy = _this.maxAnisotrophy;
         var spriteMaterial = new THREE.SpriteMaterial({ map: spriteMap, color: 0xffffff });
         spriteMaterial.map.minFilter = THREE.LinearFilter;
         _this.sprite = new three_1.Sprite(spriteMaterial);
-        _this.sprite.scale.set(31 / 81, 1, 1);
+        _this.sprite.scale.set(1 / 8, 1 / 8, 1 / 8);
         _this.scene.add(_this.sprite);
         return _this;
     }
     Player.prototype.update = function () {
-        if (this.isInvuln) {
-            this.invulnTicks++;
-        }
-        // 3 second invuln
-        if (this.invulnTicks >= 180) {
-            this.isInvuln = false;
-            this.invulnTicks = 0;
-        }
         if (this.right) {
             this.xVel = Math.min(this.xVel += 0.01, this.maxVel);
         }
@@ -48711,29 +48472,15 @@ var Player = /** @class */ (function (_super) {
             this.xVel = Math.max(this.xVel -= 0.01, -this.maxVel);
         }
         if (this.up) {
-            this.yVel += this.isJumping ? 0.009 : 0.3;
-            if (!this.isJumping) {
-                this.isOnGround = false;
-            }
-            this.isJumping = true;
+            this.yVel = Math.max(this.yVel += 0.001, this.maxVel); //idk why, but otherwise it's too fast
         }
-        this.x += !this.isAlive || (this.x < -4 && this.xVel < 0) ? 0 : this.xVel;
-        this.y += this.isAlive ? this.yVel : 0;
-        this.xVel *= 0.9;
-        this.yVel *= 0.9;
-        //floor logic
-        if (this.y < 0.075) {
-            this.isJumping = false;
-            this.isOnGround = true;
-            this.y = 0.075;
-            this.yVel = 0;
+        if (this.down) {
+            this.yVel = Math.max(this.yVel -= 0.01, -this.maxVel);
         }
-        else if (this.isOnGround) {
-            this.isJumping = false;
-        }
-        else {
-            this.yVel -= 0.01;
-        }
+        this.x += !this.isAlive || (this.x < -7.5 && this.xVel < 0) || (this.x > 7.5 && this.xVel > 0) ? 0 : this.xVel;
+        this.y += !this.isAlive || (this.y < .5 && this.yVel < 0) || (this.y > 8.5 && this.yVel > 0) ? 0 : this.yVel;
+        this.xVel *= 0.95;
+        this.yVel *= 0.95;
         this.sprite.position.set(this.x, this.y, 0);
         if (this.health <= 0) {
             this.isAlive = false;
@@ -48741,173 +48488,12 @@ var Player = /** @class */ (function (_super) {
         else {
             this.isAlive = true;
         }
-        if (this.xVel >= 0 && !this.isLookingRight) {
-            this.isLookingRight = true;
-        }
-        else if (this.xVel < 0 && this.isLookingRight) {
-            this.isLookingRight = false;
-        }
-        var spriteMap;
-        if (this.isShooting) {
-            spriteMap = this.beemanShootingState;
-            this.sprite.scale.set(45 / 81, 1, 1);
-            if (this.health < 50) {
-                spriteMap = this.beemanShootingStateHurt2;
-                this.sprite.scale.set((50 / 54) * (4 / 5), 54 / 81, 1);
-            }
-            else if (this.health < 75) {
-                spriteMap = this.beemanShootingStateHurt1;
-                this.sprite.scale.set(44 / 73, 73 / 81, 1);
-            }
-            spriteMap.anisotropy = this.maxAnisotrophy;
-            var spriteMaterial = new THREE.SpriteMaterial({ map: spriteMap, opacity: this.isAlive ? 1 : 0, color: this.isInvuln && this.invulnTicks % 5 ? 0xff0000 : 0xffffff });
-            spriteMaterial.map.minFilter = THREE.LinearFilter;
-            this.sprite.material = spriteMaterial;
-        }
-        else {
-            spriteMap = this.beemanIdleState;
-            this.sprite.scale.set(31 / 81, 1, 1);
-            if (this.health < 50) {
-                spriteMap = this.beemanIdleStateHurt2;
-                this.sprite.scale.set((35 / 54) * (4 / 5), 54 / 81, 1);
-            }
-            else if (this.health < 75) {
-                spriteMap = this.beemanIdleStateHurt1;
-                this.sprite.scale.set(27 / 73, 73 / 81, 1);
-            }
-            spriteMap.anisotropy = this.maxAnisotrophy;
-            var spriteMaterial = new THREE.SpriteMaterial({ map: spriteMap, opacity: this.isAlive ? 1 : 0, color: this.isInvuln && this.invulnTicks % 5 ? 0xff0000 : 0xffffff });
-            spriteMaterial.map.minFilter = THREE.LinearFilter;
-            this.sprite.material = spriteMaterial;
-        }
-        if (this.isLookingRight) {
-            spriteMap.repeat.set(1, 1);
-            spriteMap.offset.set(0, 0);
-            spriteMap.anisotropy = this.maxAnisotrophy;
-            var spriteMaterial = new THREE.SpriteMaterial({ map: spriteMap, opacity: this.isAlive ? 1 : 0, color: this.isInvuln && this.invulnTicks % 5 ? 0xff0000 : 0xffffff });
-            spriteMaterial.map.minFilter = THREE.LinearFilter;
-            this.sprite.material = spriteMaterial;
-        }
-        else if (!this.isLookingRight) {
-            spriteMap.repeat.set(-1, 1);
-            spriteMap.offset.set(1, 0);
-            spriteMap.anisotropy = this.maxAnisotrophy;
-            var spriteMaterial = new THREE.SpriteMaterial({ map: spriteMap, opacity: this.isAlive ? 1 : 0, color: this.isInvuln && this.invulnTicks % 5 ? 0xff0000 : 0xffffff });
-            spriteMaterial.map.minFilter = THREE.LinearFilter;
-            this.sprite.material = spriteMaterial;
-        }
-    };
-    Player.prototype.takeHit = function () {
-        this.health -= this.isInvuln ? 0 : 10;
-        this.isInvuln = true;
     };
     Player.prototype.render = function () {
     };
     return Player;
 }(stage_1.Updateable));
 exports.Player = Player;
-
-
-/***/ }),
-
-/***/ "./src/projectile.js":
-/*!***************************!*\
-  !*** ./src/projectile.js ***!
-  \***************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-exports.__esModule = true;
-var three_1 = __webpack_require__(/*! three */ "./node_modules/three/build/three.module.js");
-var stage_1 = __webpack_require__(/*! ./stage */ "./src/stage.js");
-var THREE = __webpack_require__(/*! three */ "./node_modules/three/build/three.module.js"); //only needed due to three type shenanigans
-var Projectile = /** @class */ (function (_super) {
-    __extends(Projectile, _super);
-    function Projectile(scene, x, y, xVel, yVel, type) {
-        var _this = _super.call(this) || this;
-        _this.x = x;
-        _this.y = y;
-        _this.type = type;
-        _this.totalTicks = 0;
-        _this.isAlive = true;
-        _this.xVelocity = xVel;
-        _this.yVelocity = yVel;
-        var scaleX = 1 / 8;
-        var scaleY = 1 / 8;
-        var scaleZ = 1;
-        var spriteMap;
-        switch (type) {
-            case 0: { //basic bee
-                spriteMap = new THREE.TextureLoader().load("assets/bee1.png");
-                _this.lifetimeTicks = 60 * 10; //10 seconds
-                break;
-            }
-            case 1: { //homing bee
-                spriteMap = new THREE.TextureLoader().load("assets/bee1.png");
-                _this.lifetimeTicks = 60 * 10; //10 seconds
-                break;
-            }
-            case 2: { //exterminator gas puff
-                spriteMap = new THREE.TextureLoader().load("assets/BoundingBox.png");
-                _this.lifetimeTicks = 60 * 3; //3 seconds
-                break;
-            }
-            case 3: { //wasp? NYI
-                spriteMap = new THREE.TextureLoader().load("assets/BoundingBox.png");
-                break;
-            }
-            case 4: { //queen bee
-                spriteMap = new THREE.TextureLoader().load("assets/queenbee.png");
-                var scaleX = 9 / 10;
-                var scaleY = 1;
-                var scaleZ = 1;
-                break;
-            }
-        }
-        spriteMap.minFilter = THREE.NearestFilter;
-        spriteMap.magFilter = THREE.NearestFilter;
-        var spriteMaterial = new THREE.SpriteMaterial({ map: spriteMap, color: 0xffffff });
-        _this.sprite = new three_1.Sprite(spriteMaterial);
-        _this.sprite.scale.set(scaleX, scaleY, scaleZ); //guesstemates
-        scene.add(_this.sprite);
-        return _this;
-    }
-    Projectile.prototype.render = function () {
-    };
-    Projectile.prototype.update = function () {
-        this.totalTicks++;
-        if (this.totalTicks >= this.lifetimeTicks) {
-            this.isAlive = false;
-        }
-        this.x += this.xVelocity;
-        this.y += this.yVelocity;
-        if (this.type == 2) {
-            this.xVelocity -= this.xVelocity / 10;
-            this.yVelocity -= this.yVelocity / 10;
-        }
-        else if (this.type == 1) {
-            //add homing bee logic here
-        }
-        this.sprite.position.set(this.x, this.y, 0);
-    };
-    return Projectile;
-}(stage_1.Updateable));
-exports.Projectile = Projectile;
 
 
 /***/ }),
@@ -48935,40 +48521,43 @@ var Updateable = /** @class */ (function () {
 exports.Updateable = Updateable;
 var Stage = /** @class */ (function () {
     function Stage() {
-        this.gameScene = new three_1.Scene();
-        this.UIScene = new three_1.Scene(); //orthographic vs perspective?
-        this.BackgroundScene = new three_1.Scene();
+        this.sceneList = {}; //this seems like a hack to initialize
+        this.sceneList["game"] = new three_1.Scene();
+        this.sceneList["ui"] = new three_1.Scene(); //orthographic vs perspective?
+        this.sceneList["background"] = new three_1.Scene();
         this.height = 9;
         this.width = 16;
         //this.camera = new PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 500);//endererSize.width / - 2, rendererSize.width / 2, rendererSize.height / 2, rendererSize.height / -2, -1000, 1000
-        this.gameCamera = new three_1.OrthographicCamera(this.width / -2, this.width / 2, this.height - .5, -.5, -1000, 1000);
-        this.gameCamera.position.set(0, 0, 25);
-        this.gameCamera.lookAt(0, 0, 0);
-        this.UICamera = new three_1.OrthographicCamera(this.width / -2, this.width / 2, this.height / 2, this.height / -2, -1000, 1000);
-        this.UICamera.position.set(0, 0, 25);
-        this.UICamera.lookAt(0, 0, 0);
-        this.BackgroundCamera = new three_1.OrthographicCamera(this.width / -2, this.width / 2, this.height - .5, -.5, -1000, 1000); //make sure this is always the same as the gameCamera
-        this.BackgroundCamera.position.set(0, 0, 25);
-        this.BackgroundCamera.lookAt(0, 0, 0);
-        this.UIElements = new Array();
-        this.BackgroundElements = [];
-        this.gameElements = [];
+        this.cameraList = {}; //this seems like a hack to initialize
+        this.cameraList["game"] = new three_1.OrthographicCamera(this.width / -2, this.width / 2, this.height, 0, -1000, 1000);
+        this.cameraList["game"].position.set(0, 0, 25);
+        this.cameraList["game"].lookAt(0, 0, 0);
+        this.cameraList["ui"] = new three_1.OrthographicCamera(this.width / -2, this.width / 2, this.height / 2, this.height / -2, -1000, 1000);
+        this.cameraList["ui"].position.set(0, 0, 25);
+        this.cameraList["ui"].lookAt(0, 0, 0);
+        this.cameraList["background"] = new three_1.OrthographicCamera(this.width / -2, this.width / 2, this.height, 0, -1000, 1000); //make sure this is always the same as the gameCamera
+        this.cameraList["background"].position.set(0, 0, 25);
+        this.cameraList["background"].lookAt(0, 0, 0);
+        this.elementsList = {}; //this seems like a hack to initialize
+        this.elementsList["ui"] = [];
+        this.elementsList["background"] = [];
+        this.elementsList["game"] = [];
     }
     Stage.prototype.render = function (renderer) {
         renderer.autoClear = true;
-        renderer.render(this.UIScene, this.UICamera);
+        renderer.render(this.sceneList["ui"], this.cameraList["ui"]);
         renderer.autoClear = false;
-        renderer.render(this.BackgroundScene, this.BackgroundCamera);
-        renderer.render(this.gameScene, this.gameCamera);
+        renderer.render(this.sceneList["background"], this.cameraList["background"]);
+        renderer.render(this.sceneList["game"], this.cameraList["game"]);
     };
     Stage.prototype.baseUpdate = function () {
-        this.gameElements.forEach(function (element) {
+        this.elementsList["game"].forEach(function (element) {
             element.update();
         });
         //this.UIElements.forEach(element => {
         //    element.update();
         //});
-        this.BackgroundCamera.position.set(this.gameCamera.position.x, this.gameCamera.position.y, this.gameCamera.position.z);
+        this.cameraList["background"].position.set(this.cameraList["game"].position.x, this.cameraList["game"].position.y, this.cameraList["game"].position.z);
     };
     Stage.prototype.update = function () {
         //this should be left empty for each instance to define themselves

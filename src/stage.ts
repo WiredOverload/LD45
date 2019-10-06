@@ -64,9 +64,17 @@ export class Stage {
         this.elementsList["game"].forEach(element => {
             element.update();
         });
-        //this.UIElements.forEach(element => {
-        //    element.update();
-        //});
+
+        //waves
+        this.elementsList["background"].forEach(element => {
+            element.update();
+        });
+
+        //magnet
+        this.elementsList["ui"].forEach(element => {
+            element.update();
+        });
+
         this.cameraList["background"].position.set(this.cameraList["game"].position.x, this.cameraList["game"].position.y, this.cameraList["game"].position.z);
     }
 

@@ -14,6 +14,8 @@ import { Platform } from "./platform";
 // import { Platform } from "./platform";
 import THREE = require("three");
 import { Button } from "./button";
+import { platform } from "os";
+import { Mouse } from "./mouse";
 
 var renderer: WebGLRenderer = new WebGLRenderer();
 //renderer.setSize(window.innerWidth, window.innerHeight);//1:1 scale resolution
@@ -55,15 +57,42 @@ stageList["main"].elementsList["ui"].push(new StaticImage(stageList["main"].scen
 stageList["main"].elementsList["background"].push(new StaticImage(stageList["main"].sceneList["background"], 0, 4.5, "assets/waves1.png", new Vector3(16, 9, 1)));
 stageList["main"].elementsList["background"].push(new StaticImage(stageList["main"].sceneList["background"], 0, 4.5, "assets/waves2.png", new Vector3(16, 9, 1)));
 //stageList["gameOver"].elementsList["ui"].push(new StaticImage(stageList["gameOver"].sceneList["ui"], 0, 0, "assets/winScreen.png", new Vector3(16, 9, 1)));
-//stageList["splash"].elementsList["ui"].push(new StaticImage(stageList["splash"].sceneList["ui"], 0, 0, "assets/splashscreen.png", new Vector3(16, 9, 1)));
+stageList["splash"].elementsList["ui"].push(new StaticImage(stageList["splash"].sceneList["ui"], 0, 0, "assets/Magnet_guy.png", new Vector3(16, 9, 1)));
 
 
 stageList["main"].elementsList["game"].push(new Player(stageList["main"].sceneList["game"], renderer.capabilities.getMaxAnisotropy()));
-
+stageList["main"].elementsList["ui"].push(new Mouse(stageList["main"].sceneList["game"], renderer.capabilities.getMaxAnisotropy()));
 
 //game screen logic
 stageList["main"].update = function () {//actual splash screen update logic here
     var localStage: Stage = stageList["main"];
+
+    //wave logic
+    localStage.elementsList["background"][0].x = Math.sin(ticks/16)/4;
+    localStage.elementsList["background"][1].x = -Math.sin(ticks/16)/4;
+
+    //platform spawning
+    if(ticks % 120 == 0)//test this rate
+    {
+        var spawnLocation = Math.random();
+        if(spawnLocation < .25)
+        {
+            localStage.elementsList["game"].push(new Platform(localStage.sceneList["game"], (Math.random() * 14) + 1, 9.5, (Math.random() * .04) - .02, -Math.random() * .02, 0, 0));
+        }
+        else if (spawnLocation >= .25 && spawnLocation < .5)
+        {
+            localStage.elementsList["game"].push(new Platform(localStage.sceneList["game"], (Math.random() * 14) + 1, -.05, (Math.random() * .04) - .02, Math.random() * .02, 0, 0));
+        }
+        else if (spawnLocation >= .5 && spawnLocation < .75)
+        {
+            localStage.elementsList["game"].push(new Platform(localStage.sceneList["game"], -8.5, (Math.random() * 7) + 1, Math.random() * .02, (Math.random() * .04) - .02, 0, 0));
+        }
+        else if (spawnLocation >= .75)
+        {
+            localStage.elementsList["game"].push(new Platform(localStage.sceneList["game"], 8.5, (Math.random() * 7) + 1, -Math.random() * .02, (Math.random() * .04) - .02, 0, 0));
+        }
+    }
+
     localStage.elementsList["game"].forEach(el => {
         if (el.isAlive != undefined && !el.isAlive) {
             localStage.sceneList["game"].remove(el.sprite);
@@ -195,7 +224,22 @@ window.addEventListener("click", e => {
     if(currentStage == "splash") {
         currentStage = "main"
     }
-    else {
-        
-    }
+});
+
+window.addEventListener("mousemove", e => { 
+    const mouse:Mouse = stageList["main"].elementsList["ui"].find(el => el instanceof Mouse);
+    mouse.x = ((e.clientX / window.innerWidth) * 16) - 8;
+    mouse.y = 9 - ((e.clientY / window.innerHeight) * 9);
+});
+
+window.addEventListener("mouseup", e => { 
+    const mouse:Mouse = stageList["main"].elementsList["ui"].find(el => el instanceof Mouse);
+    mouse.clickedUp = true;
+    mouse.clickedDown = false;
+});
+
+window.addEventListener("mousedown", e => { 
+    const mouse:Mouse = stageList["main"].elementsList["ui"].find(el => el instanceof Mouse);
+    mouse.clickedUp = false;
+    mouse.clickedDown = true;
 });

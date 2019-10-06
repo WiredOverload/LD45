@@ -48148,6 +48148,7 @@ var stage_1 = __webpack_require__(/*! ./stage */ "./src/stage.js");
 var staticImage_1 = __webpack_require__(/*! ./staticImage */ "./src/staticImage.js");
 var player_1 = __webpack_require__(/*! ./player */ "./src/player.js");
 var platform_1 = __webpack_require__(/*! ./platform */ "./src/platform.js");
+var mouse_1 = __webpack_require__(/*! ./mouse */ "./src/mouse.js");
 var renderer = new three_1.WebGLRenderer();
 //renderer.setSize(window.innerWidth, window.innerHeight);//1:1 scale resolution
 if (window.innerWidth / 16 > window.innerHeight / 9) {
@@ -48182,11 +48183,32 @@ stageList["main"].elementsList["ui"].push(new staticImage_1.StaticImage(stageLis
 stageList["main"].elementsList["background"].push(new staticImage_1.StaticImage(stageList["main"].sceneList["background"], 0, 4.5, "assets/waves1.png", new three_1.Vector3(16, 9, 1)));
 stageList["main"].elementsList["background"].push(new staticImage_1.StaticImage(stageList["main"].sceneList["background"], 0, 4.5, "assets/waves2.png", new three_1.Vector3(16, 9, 1)));
 //stageList["gameOver"].elementsList["ui"].push(new StaticImage(stageList["gameOver"].sceneList["ui"], 0, 0, "assets/winScreen.png", new Vector3(16, 9, 1)));
-//stageList["splash"].elementsList["ui"].push(new StaticImage(stageList["splash"].sceneList["ui"], 0, 0, "assets/splashscreen.png", new Vector3(16, 9, 1)));
+stageList["splash"].elementsList["ui"].push(new staticImage_1.StaticImage(stageList["splash"].sceneList["ui"], 0, 0, "assets/Magnet_guy.png", new three_1.Vector3(16, 9, 1)));
 stageList["main"].elementsList["game"].push(new player_1.Player(stageList["main"].sceneList["game"], renderer.capabilities.getMaxAnisotropy()));
+stageList["main"].elementsList["ui"].push(new mouse_1.Mouse(stageList["main"].sceneList["game"], renderer.capabilities.getMaxAnisotropy()));
 //game screen logic
 stageList["main"].update = function () {
     var localStage = stageList["main"];
+    //wave logic
+    localStage.elementsList["background"][0].x = Math.sin(ticks / 16) / 4;
+    localStage.elementsList["background"][1].x = -Math.sin(ticks / 16) / 4;
+    //platform spawning
+    if (ticks % 120 == 0) //test this rate
+     {
+        var spawnLocation = Math.random();
+        if (spawnLocation < .25) {
+            localStage.elementsList["game"].push(new platform_1.Platform(localStage.sceneList["game"], (Math.random() * 14) + 1, 9.5, (Math.random() * .04) - .02, -Math.random() * .02, 0, 0));
+        }
+        else if (spawnLocation >= .25 && spawnLocation < .5) {
+            localStage.elementsList["game"].push(new platform_1.Platform(localStage.sceneList["game"], (Math.random() * 14) + 1, -.05, (Math.random() * .04) - .02, Math.random() * .02, 0, 0));
+        }
+        else if (spawnLocation >= .5 && spawnLocation < .75) {
+            localStage.elementsList["game"].push(new platform_1.Platform(localStage.sceneList["game"], -8.5, (Math.random() * 7) + 1, Math.random() * .02, (Math.random() * .04) - .02, 0, 0));
+        }
+        else if (spawnLocation >= .75) {
+            localStage.elementsList["game"].push(new platform_1.Platform(localStage.sceneList["game"], 8.5, (Math.random() * 7) + 1, -Math.random() * .02, (Math.random() * .04) - .02, 0, 0));
+        }
+    }
     localStage.elementsList["game"].forEach(function (el) {
         if (el.isAlive != undefined && !el.isAlive) {
             localStage.sceneList["game"].remove(el.sprite);
@@ -48301,9 +48323,92 @@ window.addEventListener("click", function (e) {
     if (currentStage == "splash") {
         currentStage = "main";
     }
-    else {
-    }
 });
+window.addEventListener("mousemove", function (e) {
+    var mouse = stageList["main"].elementsList["ui"].find(function (el) { return el instanceof mouse_1.Mouse; });
+    mouse.x = ((e.clientX / window.innerWidth) * 16) - 8;
+    mouse.y = 9 - ((e.clientY / window.innerHeight) * 9);
+});
+window.addEventListener("mouseup", function (e) {
+    var mouse = stageList["main"].elementsList["ui"].find(function (el) { return el instanceof mouse_1.Mouse; });
+    mouse.clickedUp = true;
+    mouse.clickedDown = false;
+});
+window.addEventListener("mousedown", function (e) {
+    var mouse = stageList["main"].elementsList["ui"].find(function (el) { return el instanceof mouse_1.Mouse; });
+    mouse.clickedUp = false;
+    mouse.clickedDown = true;
+});
+
+
+/***/ }),
+
+/***/ "./src/mouse.js":
+/*!**********************!*\
+  !*** ./src/mouse.js ***!
+  \**********************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+exports.__esModule = true;
+var three_1 = __webpack_require__(/*! three */ "./node_modules/three/build/three.module.js");
+var stage_1 = __webpack_require__(/*! ./stage */ "./src/stage.js");
+var THREE = __webpack_require__(/*! three */ "./node_modules/three/build/three.module.js"); //only needed due to three type shenanigans
+var Mouse = /** @class */ (function (_super) {
+    __extends(Mouse, _super);
+    function Mouse(scene, maxAnisotropy) {
+        var _this = _super.call(this) || this;
+        _this.x = 0;
+        _this.y = 5;
+        var spriteMap = new THREE.TextureLoader().load("assets/magnet.png");
+        var field = new THREE.TextureLoader().load("assets/magneticField.png");
+        field.anisotropy = maxAnisotropy;
+        spriteMap.anisotropy = maxAnisotropy; //renderer.capabilities.getMaxAnisotropy()
+        // spriteMap.minFilter = THREE.NearestFilter;
+        // spriteMap.magFilter = THREE.NearestFilter;
+        var spriteMaterial = new THREE.SpriteMaterial({ map: spriteMap, color: 0xffffff });
+        var spriteFieldMaterial = new THREE.SpriteMaterial({ map: field, color: 0xffffff });
+        //spriteMaterial.map.minFilter = THREE.LinearFilter;
+        _this.sprite = new three_1.Sprite(spriteMaterial);
+        _this.sprite.scale.set(1 / 8, 1 / 8, 1 / 8);
+        _this.sprite.position.set(_this.x, _this.y, 0);
+        scene.add(_this.sprite);
+        _this.spriteHalo = new three_1.Sprite(spriteFieldMaterial);
+        _this.sprite.scale.set(1 / 8, 1 / 8, 1 / 8);
+        _this.sprite.position.set(0, 10, 0); //above screen
+        return _this;
+        //scene.add(this.sprite);
+    }
+    Mouse.prototype.render = function (scene) {
+        if (this.clickedDown) {
+            scene.add(this.spriteHalo);
+        }
+        if (this.clickedUp) {
+            scene.remove(this.spriteHalo);
+        }
+    };
+    Mouse.prototype.update = function () {
+        this.sprite.position.set(this.x, this.y, 0);
+        this.spriteHalo.position.set(this.x, this.y, 0);
+    };
+    return Mouse;
+}(stage_1.Updateable));
+exports.Mouse = Mouse;
 
 
 /***/ }),
@@ -48351,30 +48456,9 @@ var Platform = /** @class */ (function (_super) {
         _this.rotationRadians = rotationRadians;
         var spriteMap;
         switch (type) {
-            case 0: { //basic bee
-                spriteMap = new THREE.TextureLoader().load("assets/bee1.png");
-                _this.lifetimeTicks = 60 * 10; //10 seconds
-                break;
-            }
-            case 1: { //homing bee
-                spriteMap = new THREE.TextureLoader().load("assets/bee1.png");
-                _this.lifetimeTicks = 60 * 10; //10 seconds
-                break;
-            }
-            case 2: { //exterminator gas puff
-                spriteMap = new THREE.TextureLoader().load("assets/BoundingBox.png");
-                _this.lifetimeTicks = 60 * 3; //3 seconds
-                break;
-            }
-            case 3: { //wasp? NYI
-                spriteMap = new THREE.TextureLoader().load("assets/BoundingBox.png");
-                break;
-            }
-            case 4: { //queen bee
-                spriteMap = new THREE.TextureLoader().load("assets/queenbee.png");
-                var scaleX = 9 / 10;
-                var scaleY = 1;
-                var scaleZ = 1;
+            case 0: { //basic platform
+                spriteMap = new THREE.TextureLoader().load("assets/raft1.png");
+                //this.lifetimeTicks = 60 * 10;//10 seconds
                 break;
             }
         }
@@ -48389,19 +48473,12 @@ var Platform = /** @class */ (function (_super) {
     Platform.prototype.render = function () {
     };
     Platform.prototype.update = function () {
-        this.totalTicks++;
-        if (this.totalTicks >= this.lifetimeTicks) {
-            this.isAlive = false;
-        }
+        // this.totalTicks++;
+        // if (this.totalTicks >= this.lifetimeTicks) {
+        //     this.isAlive = false;
+        // }
         this.x += this.xVelocity;
         this.y += this.yVelocity;
-        if (this.type == 2) {
-            this.xVelocity -= this.xVelocity / 10;
-            this.yVelocity -= this.yVelocity / 10;
-        }
-        else if (this.type == 1) {
-            //add homing bee logic here
-        }
         this.sprite.position.set(this.x, this.y, 0);
     };
     return Platform;
@@ -48454,7 +48531,7 @@ var Player = /** @class */ (function (_super) {
         _this.health = 100;
         _this.isAlive = true;
         _this.maxAnisotrophy = maxAnisotrophy;
-        _this.beemanIdleState = new THREE.TextureLoader().load("assets/Tiny.png");
+        _this.beemanIdleState = new THREE.TextureLoader().load("assets/swimmer1.png");
         var spriteMap = _this.beemanIdleState;
         spriteMap.anisotropy = _this.maxAnisotrophy;
         var spriteMaterial = new THREE.SpriteMaterial({ map: spriteMap, color: 0xffffff });
@@ -48554,9 +48631,14 @@ var Stage = /** @class */ (function () {
         this.elementsList["game"].forEach(function (element) {
             element.update();
         });
-        //this.UIElements.forEach(element => {
-        //    element.update();
-        //});
+        //waves
+        this.elementsList["background"].forEach(function (element) {
+            element.update();
+        });
+        //magnet
+        this.elementsList["ui"].forEach(function (element) {
+            element.update();
+        });
         this.cameraList["background"].position.set(this.cameraList["game"].position.x, this.cameraList["game"].position.y, this.cameraList["game"].position.z);
     };
     Stage.prototype.update = function () {

@@ -34,7 +34,7 @@ export class Player extends Updateable {
         this.health = 100;
         this.isAlive = true;
         this.maxAnisotrophy = maxAnisotrophy;
-        this.beemanIdleState = new THREE.TextureLoader().load("assets/Tiny.png");
+        this.beemanIdleState = new THREE.TextureLoader().load("assets/swimmer1.png");
 
         var spriteMap: Texture = this.beemanIdleState;
 

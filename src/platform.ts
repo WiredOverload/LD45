@@ -30,30 +30,9 @@ export class Platform extends Updateable {
 
         var spriteMap: Texture;
         switch (type) {
-            case 0: {//basic bee
-                spriteMap = new THREE.TextureLoader().load("assets/bee1.png");
-                this.lifetimeTicks = 60 * 10;//10 seconds
-                break;
-            }
-            case 1: {//homing bee
-                spriteMap = new THREE.TextureLoader().load("assets/bee1.png");
-                this.lifetimeTicks = 60 * 10;//10 seconds
-                break;
-            }
-            case 2: {//exterminator gas puff
-                spriteMap = new THREE.TextureLoader().load("assets/BoundingBox.png");
-                this.lifetimeTicks = 60 * 3;//3 seconds
-                break;
-            }
-            case 3: {//wasp? NYI
-                spriteMap = new THREE.TextureLoader().load("assets/BoundingBox.png");
-                break;
-            }
-            case 4: { //queen bee
-                spriteMap = new THREE.TextureLoader().load("assets/queenbee.png");
-                var scaleX = 9/10;
-                var scaleY = 1;
-                var scaleZ = 1;
+            case 0: {//basic platform
+                spriteMap = new THREE.TextureLoader().load("assets/raft1.png");
+                //this.lifetimeTicks = 60 * 10;//10 seconds
                 break;
             }
         }
@@ -70,21 +49,14 @@ export class Platform extends Updateable {
     }
 
     update() {
-        this.totalTicks++;
+        // this.totalTicks++;
 
-        if (this.totalTicks >= this.lifetimeTicks) {
-            this.isAlive = false;
-        }
+        // if (this.totalTicks >= this.lifetimeTicks) {
+        //     this.isAlive = false;
+        // }
 
         this.x += this.xVelocity;
         this.y += this.yVelocity;
-        if (this.type == 2) {
-            this.xVelocity -= this.xVelocity / 10;
-            this.yVelocity -= this.yVelocity / 10;
-        }
-        else if (this.type == 1) {
-            //add homing bee logic here
-        }
 
         this.sprite.position.set(this.x, this.y, 0);
     }

@@ -13,20 +13,28 @@ export class Platform extends Updateable {
     totalTicks: number;
     isAlive: boolean;
     rotationRadians: number;
+    isAttached: boolean;
+    //attachedTo: Platform;//this should always be a reference?
+    //attachedTo: { [key: number]: Platform; };//list of attached platforms
+    attachedTo: Array<Platform>;
+    id:number; //unique id for each platform
 
-    constructor(scene: Scene, x: number, y: number, xVel: number, yVel: number, type: number, rotationRadians: number) {
+    constructor(scene: Scene, x: number, y: number, xVel: number, yVel: number, type: number, id: number) {
         super();//needed?
         this.x = x;
         this.y = y;
         this.type = type;
         this.totalTicks = 0;
         this.isAlive = true; 
+        this.isAttached = false;
         this.xVelocity = xVel;
         this.yVelocity = yVel;
         var scaleX = 1/8;
         var scaleY = 1/8;
         var scaleZ = 1;
-        this.rotationRadians = rotationRadians;
+        //this.rotationRadians = rotationRadians;//not implementing rotation for awhile
+        this.id = id;
+        this.attachedTo = [];
 
         var spriteMap: Texture;
         switch (type) {
@@ -57,6 +65,11 @@ export class Platform extends Updateable {
 
         this.x += this.xVelocity;
         this.y += this.yVelocity;
+
+        this.attachedTo.forEach(el => {
+            el.xVelocity = this.xVelocity;
+            el.yVelocity = this.yVelocity;
+        });
 
         this.sprite.position.set(this.x, this.y, 0);
     }

@@ -7,8 +7,8 @@ export class Mouse extends Updateable{
     spriteHalo:Sprite;
     x:number;
     y:number;
-    clickedDown:boolean;
-    clickedUp:boolean;
+    isClickedDown:boolean;
+    isClickedUp:boolean;
 
     constructor(scene:Scene, maxAnisotropy:number) {
         super();//needed?
@@ -35,12 +35,12 @@ export class Mouse extends Updateable{
     }
 
     render(scene:Scene) {
-        if(this.clickedDown)
+        if(this.isClickedDown)
         {
             scene.add(this.spriteHalo);
         }
 
-        if(this.clickedUp)
+        if(this.isClickedUp)
         {
             scene.remove(this.spriteHalo);
         }
